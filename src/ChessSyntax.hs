@@ -17,7 +17,7 @@ type File = Char
 
 type Rank = Int
 
-data Square = Square File Rank deriving (Eq, Show)
+data Square = Square Rank File deriving (Eq, Show)
 
 newtype Promotion = Promotion (Maybe Piece) deriving (Eq, Show)
 
@@ -31,7 +31,7 @@ type Board = Map Square CPiece
 
 data Game = Game Board Color deriving (Eq, Show)
 
-data MoveResult = Won Color | Draw | ContinueGame | InvalidPiece | InvalidDestination | InvalidCapture | InvalidCheck | InvalidMate deriving (Eq, Show)
+data MoveResult = Won Color | Draw | ContinueGame | InvalidMove deriving (Eq, Show)
 
 -- the square is the destination
 data Move
