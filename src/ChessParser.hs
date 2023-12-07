@@ -9,7 +9,19 @@ import ChessSyntax
 import Control.Applicative (Alternative (many, (<|>)))
 import Data.Maybe (fromMaybe, isJust)
 import Test.HUnit (Test (TestCase, TestList), runTestTT, (~:), (~?=))
-import Text.Parsec (ParseError, char, digit, eof, oneOf, option, optionMaybe, parse, spaces, string, try)
+import Text.Parsec
+  ( ParseError,
+    char,
+    digit,
+    eof,
+    oneOf,
+    option,
+    optionMaybe,
+    parse,
+    spaces,
+    string,
+    try,
+  )
 import Text.Parsec.String (Parser, parseFromFile)
 
 -- Given pace separated moves, return a list of Moves
@@ -47,18 +59,39 @@ normalMoveParser = do
   prom <- promotionParser
   check <- optionMaybe (char '+')
   checkmate <- optionMaybe (char '#')
-  return $ NormalMove (fromMaybe Pawn p) toSquare Nothing (Promotion prom) (Capture capture) (Check (isJust check)) (Mate (isJust checkmate))
+  return $
+    NormalMove
+      (fromMaybe Pawn p)
+      toSquare
+      Nothing
+      (Promotion prom)
+      (Capture capture)
+      (Check (isJust check))
+      (Mate (isJust checkmate))
 
 normalMoveWithDisambiguationParser :: Parser Move
 normalMoveWithDisambiguationParser = do
   p <- optionMaybe pieceParser
-  disambiguation <- optionMaybe (try bothParser <|> try rankParser <|> try fileParser)
+  disambiguation <-
+    optionMaybe
+      ( try bothParser
+          <|> try rankParser
+          <|> try fileParser
+      )
   capture <- captureParser
   toSquare <- squareParser
   prom <- promotionParser
   check <- optionMaybe (char '+')
   checkmate <- optionMaybe (char '#')
-  return $ NormalMove (fromMaybe Pawn p) toSquare disambiguation (Promotion prom) (Capture capture) (Check (isJust check)) (Mate (isJust checkmate))
+  return $
+    NormalMove
+      (fromMaybe Pawn p)
+      toSquare
+      disambiguation
+      (Promotion prom)
+      (Capture capture)
+      (Check (isJust check))
+      (Mate (isJust checkmate))
 
 pieceParser :: Parser Piece
 pieceParser = do

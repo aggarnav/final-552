@@ -1,4 +1,4 @@
-module ChessStepper where
+module ChessStepper (stepper) where
 
 import ChessGame
 import ChessParser
@@ -25,7 +25,10 @@ initialStepper =
 -- take moves, and print the current setup at each turn
 stepper :: IO ()
 stepper = do
-  putStrLn "Welcome to Chess Parser! Enter :u to undo, :q to quit, :f to load a file, and :r to restart"
+  putStrLn
+    "Welcome to Chess Parser! Enter :u to undo, :q to quit, :f to load\
+    \ a file, and :r to restart"
+  putStrLn (printGame (game initialStepper))
   go initialStepper
 
 go :: Stepper -> IO ()

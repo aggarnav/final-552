@@ -31,11 +31,19 @@ type Board = Map Square CPiece
 
 data Game = Game Board Color deriving (Eq, Show)
 
-data MoveResult = Won Color | Draw | ContinueGame | InvalidMove deriving (Eq, Show)
+data MoveResult = Won Color | Draw | ContinueGame | InvalidMove
+  deriving (Eq, Show)
 
 -- the square is the destination
 data Move
-  = NormalMove Piece Square (Maybe Disambiguation) Promotion Capture Check Mate
+  = NormalMove
+      Piece
+      Square
+      (Maybe Disambiguation)
+      Promotion
+      Capture
+      Check
+      Mate
   | KingSideCastling
   | QueenSideCastling
   deriving (Eq, Show)
