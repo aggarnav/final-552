@@ -1,34 +1,39 @@
 module GameTests (test_all) where
 
 import ChessParser
+import ChessGame
 import ChessSyntax
 import Test.HUnit
 import Test.QuickCheck
+import Control.Monad.State qualified as S
+
 
 test_all :: IO Counts
-test_all = runTestTT test_parseMoves
+test_all = runTestTT test_parseGames
 
-test_parseMoves :: Test
-test_parseMoves =
+test_parseGames :: Test
+test_parseGames =
   TestList
-    [ -- Test Pawn move
-      parseMoves "e3" ~?= Right [NormalMove Pawn (Square 3 'e') Nothing (Promotion Nothing) (Capture False) (Check False) (Mate False)],
-      -- Test Pawn move with disambiguation
-      parseMoves "e7e3" ~?= Right [NormalMove Pawn (Square 3 'e') (Just (Both (Square 7 'e'))) (Promotion Nothing) (Capture False) (Check False) (Mate False)],
-      -- Test King move
-      parseMoves "Ka1b4" ~?= Right [NormalMove King (Square 4 'b') (Just (Both (Square 1 'a'))) (Promotion Nothing) (Capture False) (Check False) (Mate False)],
-      -- Test Castling
-      parseMoves "O-O" ~?= Right [KingSideCastling],
-      parseMoves "O-O-O" ~?= Right [QueenSideCastling],
-      -- Test Pawn Promotion
-      parseMoves "ae7=Q" ~?= Right [NormalMove Pawn (Square 7 'e') (Just (File 'a')) (Promotion (Just Queen)) (Capture False) (Check False) (Mate False)],
-      -- Test multiple moves parsing
-      parseMoves "e3e4 e3"
-        ~?= Right
-          [ NormalMove Pawn (Square 4 'e') (Just (Both (Square 3 'e'))) (Promotion Nothing) (Capture False) (Check False) (Mate False),
-            NormalMove Pawn (Square 3 'e') Nothing (Promotion Nothing) (Capture False) (Check False) (Mate False)
-          ]
+    [ 
+      "game1" ~: p "test/game1" (Won White),
+      "game2" ~: p "test/game2" (Won White),
+      "game3" ~: p "test/game3" (Won White),
+      "game4" ~: p "test/game4" (Won White),
+      "game5" ~: p "test/game5" (Won White),
+      "game6" ~: p "test/game6" (Won White),
+      "game7" ~: p "test/game7" (Won White),
+      "game8" ~: p "test/game8" (Won White),
+      "game9" ~: p "test/game9" (Won White),
+      "game10" ~: p "test/game10" (Won White)
     ]
+  where
+    p fn expected = do
+      putStrLn ("Parsing " ++ fn)
+      result <- parseFile fn
+      case result of 
+        Left err -> assert False
+        Right moves -> assert (expected == S.evalState 
+          (playMoves moves) initialGame)
 
 -------------------------
 -- Arbitrary definitions--

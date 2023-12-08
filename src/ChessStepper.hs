@@ -28,11 +28,11 @@ stepper = do
   putStrLn
     "Welcome to Chess Parser! Enter :u to undo, :q to quit, :f to load\
     \ a file, and :r to restart"
-  putStrLn (printGame (game initialStepper))
   go initialStepper
 
 go :: Stepper -> IO ()
 go s = do
+  putStrLn (printGame (game s))
   putStrLn "Enter a move:"
   input <- getLine
   case List.uncons (words input) of
@@ -48,7 +48,6 @@ go s = do
           putStrLn "No history to undo"
           go s
         Just h -> do
-          putStrLn (printGame (game h))
           go h
     Just (":r", _) -> do
       putStrLn "Restarting..."
@@ -71,9 +70,9 @@ movesStepper s (Right m) = do
           go s
         Draw -> do
           putStrLn "Draw"
+          go initialStepper
         Won c -> do
           putStrLn (show c ++ " won!")
         ContinueGame -> do
           let newStepper = Stepper {game = newGame, history = Just s}
-          putStrLn (printGame newGame)
           go newStepper
