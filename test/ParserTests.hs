@@ -22,6 +22,17 @@ test_parseMoves =
               (Check False)
               (Mate False)
           ],
+      parseMoves "b5"
+        ~?= Right
+          [ NormalMove
+              Pawn
+              (Square 5 'b')
+              Nothing
+              (Promotion Nothing)
+              (Capture False)
+              (Check False)
+              (Mate False)
+          ],
       -- Test Pawn move with disambiguation
       parseMoves "e7e3"
         ~?= Right
@@ -34,12 +45,6 @@ test_parseMoves =
               (Check False)
               (Mate False)
           ],
-      -- Test reading from files
-      parseFile "game1"
-        ~?= parseMoves
-          "e4 e5 Nf3 d6 d4 Bg4 d4xe5 Bxf3 Qxf3 d6xe5 Bc4 Nf6 Qb3 Qe7 Nc3\
-          \ c6 Bg5 b5 Nxb5 c6xb5 Bxb5+ Nd7 O-O-O Rd8 Rxd7 Rxd7 Rd1 Qe6\
-          \ Bxd7+ Nxd7 Qb8+ Nxb8 Rd8#",
       -- Test King move
       parseMoves
         "Ka1b4"

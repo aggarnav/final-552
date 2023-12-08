@@ -330,16 +330,15 @@ checkPieceEmptyPath ::
   (Int -> Int) ->
   (Char -> Char) ->
   Bool
-checkPieceEmptyPath b (CPiece c p) (Square rankO fileO) rankOp fileOp =
+checkPieceEmptyPath b p (Square rankO fileO) rankOp fileOp =
   let rankT = rankOp rankO
       fileT = fileOp fileO
    in ( not (rankT < 1 || rankT > 8 || fileT < 'a' || fileT > 'h')
-          && ( ( checkPiece (CPiece c p) rankT fileT b
-                   && isNothing (b !? Square rankO fileO)
-               )
+          && isNothing (b !? Square rankO fileO)
+          && ( checkPiece p rankT fileT b
                  || checkPieceEmptyPath
                    b
-                   (CPiece c p)
+                   p
                    (Square rankT fileT)
                    rankOp
                    fileOp
