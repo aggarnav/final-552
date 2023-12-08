@@ -31,7 +31,7 @@ type Board = Map Square CPiece
 
 data Game = Game Board Color deriving (Eq, Show)
 
-data MoveResult = Won Color | Draw | ContinueGame | InvalidMove
+data MoveResult = Won Color | ContinueGame | InvalidMove
   deriving (Eq, Show)
 
 -- the square is the destination

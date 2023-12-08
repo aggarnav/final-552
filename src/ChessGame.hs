@@ -458,6 +458,7 @@ emptyOrOpponent (Game b c) s = case b !? s of
 
 -- Given a move, check if it is valid
 validMove :: Move -> Game -> Bool
+validMove Resign _ = True
 validMove KingSideCastling g@(Game b c) = case c of
   White ->
     castlingHelper
@@ -696,17 +697,21 @@ switchPlayer (Game b Black) = Game b White
 playMove :: Move -> S.State Game MoveResult
 playMove m = do
   g@(Game b c) <- S.get
-  if validMove m g
-    then do
-      let Game b' c' = Game (updateBoard m g) (otherColor c)
-      S.put (Game b' c')
-      if isCheckmate (Game b' c')
-        then return (Won c)
-        else return ContinueGame
-    else return InvalidMove
+  if m == Resign
+    then return (Won (otherColor c))
+    else
+      if validMove m g
+        then do
+          let Game b' c' = Game (updateBoard m g) (otherColor c)
+          S.put (Game b' c')
+          if isCheckmate (Game b' c')
+            then return (Won c)
+            else return ContinueGame
+        else return InvalidMove
 
 -- Given a move and a board, update the board
 updateBoard :: Move -> Game -> Board
+updateBoard Resign (Game b c) = b
 updateBoard KingSideCastling (Game b c) =
   let r = case c of White -> 1; Black -> 8
    in Map.insert

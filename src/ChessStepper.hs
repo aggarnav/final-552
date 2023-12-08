@@ -70,9 +70,6 @@ movesStepper s (Right (m : ms)) =
         InvalidMove -> do
           putStrLn ("Invalid move: " ++ show m)
           go s
-        Draw -> do
-          putStrLn "Draw"
-          go initialStepper
         Won c -> do
           putStrLn (show c ++ " won!")
           go initialStepper
