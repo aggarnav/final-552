@@ -9,31 +9,50 @@ import Control.Monad.State qualified as S
 
 
 test_all :: IO Counts
-test_all = runTestTT test_parseGames
+test_all = runTestTT $ TestList [test_valid, test_invalid]
 
-test_parseGames :: Test
-test_parseGames =
+-- Check against most popular games from chessgames.com
+test_valid :: Test
+test_valid =
   TestList
     [ 
-      "game1" ~: p "test/games/game0" (Won White),
-      "game1" ~: p "test/games/game1" (Won White),
-      "game2" ~: p "test/games/game2" (Won White),
-      "game3" ~: p "test/games/game3" (Won Black),
-      "game4" ~: p "test/games/game4" (Won White),
-      "game5" ~: p "test/games/game5" (Won Black),
-      "game6" ~: p "test/games/game6" (Won Black),
-      "game7" ~: p "test/games/game7" (Won Black),
-      "game8" ~: p "test/games/game8" (Won White),
-      "game9" ~: p "test/games/game9" (Won White)
+      "game0" ~: checkFile "test/games/game0" (Won White),
+      "game1" ~: checkFile "test/games/game1" (Won White),
+      "game2" ~: checkFile "test/games/game2" (Won White),
+      "game3" ~: checkFile "test/games/game3" (Won Black),
+      "game4" ~: checkFile "test/games/game4" (Won White),
+      "game5" ~: checkFile "test/games/game5" (Won Black),
+      "game6" ~: checkFile "test/games/game6" (Won Black),
+      "game7" ~: checkFile "test/games/game7" (Won Black),
+      "game8" ~: checkFile "test/games/game8" (Won White),
+      "game9" ~: checkFile "test/games/game9" (Won White)
     ]
-  where
-    p fn expected = do
-      putStrLn ("Parsing " ++ fn)
-      result <- parseFile fn
-      case result of 
-        Left err -> assert False
-        Right moves -> assert (expected == S.evalState 
-          (playMoves moves) initialGame)
+
+-- Check against most popular games from chessgames.com
+test_invalid :: Test
+test_invalid =
+  TestList 
+    [ 
+      "badGame0" ~: checkFile "test/games/badGame0" InvalidMove,
+      "badGame1" ~: checkFile "test/games/badGame1" InvalidMove,
+      "badGame2" ~: checkFile "test/games/badGame2" InvalidMove,
+      "badGame3" ~: checkFile "test/games/badGame3" InvalidMove,
+      "badGame4" ~: checkFile "test/games/badGame4" InvalidMove,
+      "badGame5" ~: checkFile "test/games/badGame5" InvalidMove,
+      "badGame6" ~: checkFile "test/games/badGame6" InvalidMove,
+      "badGame7" ~: checkFile "test/games/badGame7" InvalidMove,
+      "badGame8" ~: checkFile "test/games/badGame8" InvalidMove,
+      "badGame9" ~: checkFile "test/games/badGame9" InvalidMove
+    ]
+
+-- helper to run games from files
+checkFile :: String -> MoveResult -> Assertion
+checkFile fn expected = do
+  result <- parseFile fn
+  case result of 
+    Left err -> assert False
+    Right moves -> assert (expected == S.evalState 
+      (playMoves moves) initialGame)
 
 -------------------------
 -- Arbitrary definitions--
@@ -50,3 +69,5 @@ test_parseGames =
 --   runState (validMove move) game
 --     ==> runState (playMove move) game
 --     /= game
+
+-- Check that the game board doesn't change after an invalid move
