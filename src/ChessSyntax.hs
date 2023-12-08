@@ -46,6 +46,7 @@ data Move
       Mate
   | KingSideCastling
   | QueenSideCastling
+  | Resign
   deriving (Eq, Show)
 
 data Disambiguation

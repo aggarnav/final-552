@@ -6,7 +6,7 @@ module ChessParser
 where
 
 import ChessSyntax
-import Control.Applicative (Alternative (many, (<|>)))
+import Control.Applicative (Alternative (many, some, (<|>)))
 import Data.Maybe (fromMaybe, isJust)
 import Test.HUnit (Test (TestCase, TestList), runTestTT, (~:), (~?=))
 import Text.Parsec
@@ -38,7 +38,7 @@ parseFile = parseFromFile (const <$> movesParser <*> eof)
 
 -- Space separated moves parser
 movesParser :: Parser [Move]
-movesParser = many $ do
+movesParser = some $ do
   move <- moveParser
   spaces
   return move
@@ -46,7 +46,8 @@ movesParser = many $ do
 -- Single move parser
 moveParser :: Parser Move
 moveParser =
-  try queensideCastlingParser
+  try resignParser
+    <|> try queensideCastlingParser
     <|> try kingsideCastlingParser
     <|> try normalMoveWithDisambiguationParser
     <|> normalMoveParser
@@ -149,3 +150,8 @@ queensideCastlingParser :: Parser Move
 queensideCastlingParser = do
   try $ string "O-O-O"
   return QueenSideCastling
+
+resignParser :: Parser Move
+resignParser = do
+  try (string "1-0") <|> try (string "0-1")
+  return Resign
