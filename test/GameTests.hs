@@ -15,16 +15,16 @@ test_parseGames :: Test
 test_parseGames =
   TestList
     [ 
-      "game1" ~: p "test/game1" (Won White),
-      "game2" ~: p "test/game2" (Won White),
-      "game3" ~: p "test/game3" (Won White),
-      "game4" ~: p "test/game4" (Won White),
-      "game5" ~: p "test/game5" (Won White),
-      "game6" ~: p "test/game6" (Won White),
-      "game7" ~: p "test/game7" (Won White),
-      "game8" ~: p "test/game8" (Won White),
-      "game9" ~: p "test/game9" (Won White),
-      "game10" ~: p "test/game10" (Won White)
+      "game1" ~: p "test/games/game0" (Won White),
+      "game1" ~: p "test/games/game1" (Won White),
+      "game2" ~: p "test/games/game2" (Won White),
+      "game3" ~: p "test/games/game3" (Won Black),
+      "game4" ~: p "test/games/game4" (Won White),
+      "game5" ~: p "test/games/game5" (Won Black),
+      "game6" ~: p "test/games/game6" (Won Black),
+      "game7" ~: p "test/games/game7" (Won Black),
+      "game8" ~: p "test/games/game8" (Won White),
+      "game9" ~: p "test/games/game9" (Won White)
     ]
   where
     p fn expected = do

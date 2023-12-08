@@ -62,17 +62,20 @@ movesStepper :: Stepper -> Either a [Move] -> IO ()
 movesStepper s (Left err) = do
   putStrLn "Invalid move format"
   go s
-movesStepper s (Right m) = do
-  let (result, newGame) = S.runState (playMoves m) (game s)
+movesStepper s (Right []) = do
+  go s
+movesStepper s (Right (m : ms)) =
+  let (result, newGame) = S.runState (playMove m) (game s)
    in case result of
         InvalidMove -> do
-          putStrLn "Invalid move"
+          putStrLn ("Invalid move: " ++ show m)
           go s
         Draw -> do
           putStrLn "Draw"
           go initialStepper
         Won c -> do
           putStrLn (show c ++ " won!")
+          go initialStepper
         ContinueGame -> do
           let newStepper = Stepper {game = newGame, history = Just s}
-          go newStepper
+          movesStepper newStepper (Right ms) -- allow for multiple move undos

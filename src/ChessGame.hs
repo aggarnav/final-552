@@ -367,10 +367,10 @@ translateMove Black = -1
 
 -- Given a move, check if it results in checkmate
 isCheckmate :: Game -> Bool
-isCheckmate (Game b c) = case findPiece (CPiece c King) b of
+isCheckmate g@(Game b c) = case findPiece (CPiece c King) b of
   Nothing -> True
   Just s@(Square rank file) ->
-    isCheck (Game (helper id id) c)
+    isCheck g
       && isCheck (Game (helper succ id) c)
       && isCheck (Game (helper pred id) c)
       && isCheck (Game (helper succ succ) c)
