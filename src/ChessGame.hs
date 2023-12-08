@@ -762,6 +762,7 @@ printGame (Game b col) =
     ++ show col
     ++ "'s turn.\n"
 
+-- Print a row of the board
 printRow :: Int -> Board -> String
 printRow r b =
   if r == 0
@@ -775,6 +776,7 @@ printRow r b =
         ++ "\n"
         ++ printRow (r - 1) b
 
+-- Helper to print a row of the board
 printRow' :: Int -> Char -> Board -> String
 printRow' i c b =
   if c == 'h'
@@ -784,7 +786,7 @@ printRow' i c b =
     val :: String
     val = maybe "." show (Map.lookup (Square i c) b)
 
--- Initialise the game
+-- Initialise the game --
 firstRow :: String
 firstRow = "   a b c d e f g h   "
 

@@ -10,11 +10,13 @@ import Data.List as List
 -- Stepper --
 -------------
 
+-- Stepper data type
 data Stepper = Stepper
   { game :: Game,
     history :: Maybe Stepper
   }
 
+-- initial stepper
 initialStepper :: Stepper
 initialStepper =
   Stepper
@@ -30,6 +32,7 @@ stepper = do
     \ a file, and :r to restart"
   go initialStepper
 
+-- take a stepper, and play the game
 go :: Stepper -> IO ()
 go s = do
   putStrLn (printGame (game s))
@@ -58,6 +61,7 @@ go s = do
       putStrLn "Please enter an input"
       go s
 
+-- take a list of moves, and play them
 movesStepper :: Stepper -> Either a [Move] -> IO ()
 movesStepper s (Left err) = do
   putStrLn "Invalid move format"

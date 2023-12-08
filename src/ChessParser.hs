@@ -32,7 +32,7 @@ parseMoves = parse movesParser ""
 parseSingleMove :: String -> Either ParseError Move
 parseSingleMove = parse moveParser ""
 
--- TODO: check that this works
+-- Parse a file containing space separated moves
 parseFile :: String -> IO (Either ParseError [Move])
 parseFile = parseFromFile (const <$> movesParser <*> eof)
 
@@ -52,6 +52,7 @@ moveParser =
     <|> try normalMoveWithDisambiguationParser
     <|> normalMoveParser
 
+-- Normal move parser
 normalMoveParser :: Parser Move
 normalMoveParser = do
   p <- optionMaybe pieceParser
@@ -70,6 +71,7 @@ normalMoveParser = do
       (Check (isJust check))
       (Mate (isJust checkmate))
 
+-- Normal move with disambiguation parser
 normalMoveWithDisambiguationParser :: Parser Move
 normalMoveWithDisambiguationParser = do
   p <- optionMaybe pieceParser
@@ -94,6 +96,7 @@ normalMoveWithDisambiguationParser = do
       (Check (isJust check))
       (Mate (isJust checkmate))
 
+-- Piece parser
 pieceParser :: Parser Piece
 pieceParser = do
   p <- oneOf "NBRQK"
@@ -105,31 +108,37 @@ pieceParser = do
     'K' -> King
     _ -> error "Impossible"
 
+-- Square parser
 squareParser :: Parser Square
 squareParser = do
   file <- oneOf ['a' .. 'h'] -- File (column)
   rank <- oneOf ['1' .. '8'] -- Rank (row)
   return $ Square (read [rank]) file
 
+-- Disambiguation file parser
 fileParser :: Parser Disambiguation
 fileParser = do
   file <- oneOf ['a' .. 'h']
   return $ File file
 
+-- Disambiguation rank parser
 rankParser :: Parser Disambiguation
 rankParser = do
   rank <- digit
   return $ Rank (read [rank])
 
+-- Disambiguation both parser
 bothParser :: Parser Disambiguation
 bothParser = do
   file <- oneOf ['a' .. 'h'] -- File (column)
   rank <- oneOf ['1' .. '8'] -- Rank (row)
   return $ Both $ Square (read [rank]) file
 
+-- Capture parser
 captureParser :: Parser Bool
 captureParser = option False (char 'x' >> return True)
 
+-- Promotion parser
 promotionParser :: Parser (Maybe Piece)
 promotionParser = optionMaybe $ do
   char '='
@@ -141,16 +150,19 @@ promotionParser = optionMaybe $ do
     'Q' -> Queen
     _ -> error "Impossible"
 
+-- Kingside castling parser
 kingsideCastlingParser :: Parser Move
 kingsideCastlingParser = do
   try $ string "O-O"
   return KingSideCastling
 
+-- Queenside castling parser
 queensideCastlingParser :: Parser Move
 queensideCastlingParser = do
   try $ string "O-O-O"
   return QueenSideCastling
 
+-- Resign parser
 resignParser :: Parser Move
 resignParser = do
   try (string "1-0") <|> try (string "0-1")

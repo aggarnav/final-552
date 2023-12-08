@@ -55,6 +55,7 @@ data Disambiguation
   | Both Square
   deriving (Show, Eq)
 
+--- Instances ---
 instance Ord Square where
   compare (Square f1 r1) (Square f2 r2) = compare (r1, f1) (r2, f2)
 
