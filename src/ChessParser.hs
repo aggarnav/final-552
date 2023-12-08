@@ -2,6 +2,8 @@ module ChessParser
   ( parseMoves,
     parseSingleMove,
     parseFile,
+    pretty,
+    singlePretty,
   )
 where
 
