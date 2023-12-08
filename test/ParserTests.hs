@@ -33,6 +33,18 @@ test_parseMoves =
               (Check False)
               (Mate False)
           ],
+      -- Test check mate
+      parseMoves "Rd8#"
+        ~?= Right
+          [ NormalMove
+              Rook
+              (Square 8 'd')
+              Nothing
+              (Promotion Nothing)
+              (Capture False)
+              (Check False)
+              (Mate True)
+          ],
       -- Test Pawn move with disambiguation
       parseMoves "e7e3"
         ~?= Right

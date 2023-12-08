@@ -511,9 +511,8 @@ validMove
      in checkPiece (CPiece c p) ro fo b
           && origin /= dest
           && emptyOrOpponent g dest
-          && check == isCheck newGame
+          && (check == isCheck newGame || checkm == isCheckmate newGame)
           && not (isCheck (Game newBoard c)) -- shouldn't check after move
-          && checkm == isCheckmate newGame
           && capture == isJust (b !? dest)
           && isJust prom
             == ( (p == Pawn)
