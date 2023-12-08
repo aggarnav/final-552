@@ -386,6 +386,9 @@ isCheckmate (Game b c) = case findPiece (CPiece c King) b of
           || rankOp rank > 8
           || fileOp file < 'a'
           || fileOp file > 'h'
+          || case b !? Square (rankOp rank) (fileOp file) of
+            Nothing -> False
+            Just (CPiece c' _) -> c' == c
           then Map.empty
           else
             Map.insert
