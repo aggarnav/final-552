@@ -37,8 +37,7 @@ go s = do
   input <- getLine
   case List.uncons (words input) of
     Just (":f", [fn]) -> do
-      f <- readFile fn
-      m <- parseFile f
+      m <- parseFile fn
       movesStepper s m
     Just (":q", _) -> do
       putStrLn "Goodbye!"
