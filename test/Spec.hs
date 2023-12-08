@@ -9,4 +9,5 @@ main = do
   P.test_all
   putStrLn "\n*** Testing Game Functionality ***"
   G.test_all
+  G.qc
   putStrLn "\n*** Testing Finished ***"

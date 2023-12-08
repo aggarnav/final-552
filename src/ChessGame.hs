@@ -1,6 +1,5 @@
-module ChessGame (playMove, playMoves, printGame, initialGame) where
+module ChessGame (playMove, playMoves, printGame, initialGame, validMove, validBoard) where
 
-import ChessParser
 import ChessSyntax
 import Control.Monad.State qualified as S
 import Data.Map ((!?))
