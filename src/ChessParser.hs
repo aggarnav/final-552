@@ -95,13 +95,18 @@ normalMoveWithDisambiguationParser = do
 
 pieceParser :: Parser Piece
 pieceParser = do
-  p <- oneOf "PNBRQK"
+  p <- oneOf "PNBRQKpnbrqk"
   return $ case p of
     'N' -> Knight
     'B' -> Bishop
     'R' -> Rook
     'Q' -> Queen
     'K' -> King
+    'n' -> Knight
+    'b' -> Bishop
+    'r' -> Rook
+    'q' -> Queen
+    'k' -> King
     _ -> error "Impossible"
 
 squareParser :: Parser Square
