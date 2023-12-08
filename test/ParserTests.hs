@@ -35,10 +35,10 @@ test_parseMoves =
               (Mate False)
           ],
       -- Test reading from files
-      parseFromFile "game1"
+      parseFile "game1"
         ~?= parseMoves
           "e4 e5 Nf3 d6 d4 Bg4 d4xe5 Bxf3 Qxf3 d6xe5 Bc4 Nf6 Qb3 Qe7 Nc3\
-          \ c6 Bg5 b5 Nxb5 c6xb5 Bxb5+ Nd7 0-0-0 Rd8 Rxd7 Rxd7 Rd1 Qe6\
+          \ c6 Bg5 b5 Nxb5 c6xb5 Bxb5+ Nd7 O-O-O Rd8 Rxd7 Rxd7 Rd1 Qe6\
           \ Bxd7+ Nxd7 Qb8+ Nxb8 Rd8#",
       -- Test King move
       parseMoves
