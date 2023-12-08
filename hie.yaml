@@ -1,9 +1,8 @@
 cradle:
-  cabal:
+  stack:
     - path: ./test
-      component: "project-cis5520:test:project-cis5520-test"
+      component: "haskess:test:haskess-test"
     - path: ./src
-      component: "project-cis5520:lib"
+      component: "haskess:lib"
     - path: ./app
-      component: "project-cis5520:exe:project-cis5520-exe"
-
+      component: "haskess:exe:haskess-exe"

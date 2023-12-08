@@ -1,9 +1,9 @@
 cabal-version:  2.2
-name:           project-cis5520
+name:           haskess
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/project-cis5520#readme>
-homepage:       https://github.com/githubuser/project-cis5520#readme
-bug-reports:    https://github.com/githubuser/project-cis5520/issues
+description:    Please see the README on GitHub at <https://github.com/githubuser/haskess#readme>
+homepage:       https://github.com/githubuser/haskess#readme
+bug-reports:    https://github.com/githubuser/haskess/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2022 Author name here
@@ -16,7 +16,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/project-cis5520
+  location: https://github.com/githubuser/haskess
 
 common common-stanza
   ghc-options:         -Wno-type-defaults -fwarn-incomplete-patterns
@@ -50,7 +50,7 @@ library
   hs-source-dirs:
       src
 
-executable project-cis5520-exe
+executable haskess-exe
   import:
       common-stanza
   main-is: 
@@ -59,10 +59,10 @@ executable project-cis5520-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      project-cis5520
+      haskess
 
 
-test-suite project-cis5520-test
+test-suite haskess-test
   import:
       common-stanza
   type: 
@@ -73,5 +73,5 @@ test-suite project-cis5520-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      project-cis5520
+      haskess
 
