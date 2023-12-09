@@ -1,12 +1,29 @@
 module GameTests (test_all, qc) where
 
-import ChessGame (playMove, playMoves, validBoard, validMove, initialGame)
+import ChessGame
+  ( activePlayers,
+    initialGame,
+    playMoves,
+    validBoard,
+    validMove,
+  )
 import ChessParser (parseFile)
-import ChessSyntax (Game (Game), Move, MoveResult (InvalidMove, Won), Color (Black, White))
-import Control.Monad.State qualified as S
-import Test.HUnit (Assertion, Counts, Test (TestCase, TestList), assert, runTestTT, (~:), (~?=))
+import ChessSyntax
+  ( Color (Black, White),
+    Game (Game),
+    Move (Resign),
+    MoveResult (InvalidMove, Won),
+  )
+import Test.HUnit
+  ( Assertion,
+    Counts,
+    Test (TestCase, TestList),
+    assert,
+    runTestTT,
+    (~:),
+    (~?=),
+  )
 import Test.QuickCheck
-
 
 test_all :: IO Counts
 test_all = runTestTT $ TestList [test_valid, test_invalid]
@@ -52,33 +69,36 @@ checkFile fn expected = do
     Right moves ->
       assert
         ( expected
-            == S.evalState
-              (playMoves moves)
-              initialGame
+            == actual
         )
+      where
+        (actual, _) = playMoves moves initialGame
 
--- Check if the game board changes after a move
+-- Check if the board changes after a move, is stil valid,
+-- along with the player changing and pieces not disappearing
 prop_validMove :: Game -> Move -> Property
 prop_validMove game@(Game board color) move =
-  validBoard board
+  (move /= Resign)
+    && validBoard board
     && validMove move game
-      ==> S.execState (playMove move) game
-      /= game
+    ==> let (_, g@(Game b c)) = playMoves [move] game
+         in g /= game
+              && validBoard b
+              && c /= color
+              && activePlayers b <= activePlayers board
+              && activePlayers b >= activePlayers board - 1
 
 -- Check that the game board doesn't change after an invalid move
 prop_inValidMove :: Game -> Move -> Property
 prop_inValidMove game@(Game board color) move =
   validBoard board
     && not (validMove move game)
-      ==> S.execState (playMove move) game
-      == game
+    ==> actual
+    == game
+  where
+    (_, actual) = playMoves [move] game
 
--- one move can kill at most own other piece
--- a valid board must not have an invalid square
--- after every move the current player should switch
--- maybe create a generator of valid moves, along with the pretty printer for the move
--- add a fold over the functionality for the moves
-
+-- QuickCheck tests
 qc :: IO ()
 qc = do
   putStrLn "QuickCheck valid moves"

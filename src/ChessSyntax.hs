@@ -164,10 +164,26 @@ instance Arbitrary Move where
       genNormalMove = do
         piece <- elements [Pawn, Knight, Bishop, Rook, Queen, King]
         toSquare <- (arbitrary :: Gen Square)
-        cap <- frequency [(1, return True), (9, return False)]
-        check <- frequency [(1, return True), (9, return False)]
-        checkm <- frequency [(1, return True), (50, return False)]
-        prom <- frequency [(1, Just <$> (arbitrary :: Gen Piece)), (50, return Nothing)]
+        cap <-
+          frequency
+            [ (1, return True),
+              (9, return False)
+            ]
+        check <-
+          frequency
+            [ (1, return True),
+              (9, return False)
+            ]
+        checkm <-
+          frequency
+            [ (1, return True),
+              (50, return False)
+            ]
+        prom <-
+          frequency
+            [ (1, Just <$> (arbitrary :: Gen Piece)),
+              (50, return Nothing)
+            ]
         disam <-
           frequency
             [ (1, Just <$> (arbitrary :: Gen Disambiguation)),

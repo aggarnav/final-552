@@ -1,10 +1,13 @@
 module ChessStepper (stepper) where
 
-import ChessGame
-import ChessParser
+import ChessGame (initialGame, playMoves, printGame)
+import ChessParser (parseFile, parseMoves)
 import ChessSyntax
-import Control.Monad.State qualified as S
-import Data.List as List
+  ( Game,
+    Move,
+    MoveResult (ContinueGame, InvalidMove, Won),
+  )
+import Data.List as List (uncons)
 
 -------------
 -- Stepper --
@@ -69,7 +72,7 @@ movesStepper s (Left err) = do
 movesStepper s (Right []) = do
   go s
 movesStepper s (Right (m : ms)) =
-  let (result, newGame) = S.runState (playMove m) (game s)
+  let (result, newGame) = playMoves [m] (game s)
    in case result of
         InvalidMove -> do
           putStrLn ("Invalid move: " ++ show m)

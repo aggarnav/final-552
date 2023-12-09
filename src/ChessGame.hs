@@ -1,4 +1,12 @@
-module ChessGame (playMove, playMoves, printGame, initialGame, validMove, validBoard) where
+module ChessGame
+  ( playMoves,
+    printGame,
+    initialGame,
+    validMove,
+    validBoard,
+    activePlayers,
+  )
+where
 
 import ChessSyntax
 import Control.Monad.State qualified as S
@@ -13,11 +21,24 @@ findPiece p =
     (\k v acc -> if v == p then Just k else acc)
     Nothing
 
--- Check that both kinds exist
+-- Check that both kings exist and no square is invalid
 validBoard :: Board -> Bool
 validBoard b =
   isJust (findPiece (CPiece White King) b)
     && isJust (findPiece (CPiece Black King) b)
+    && Map.foldrWithKey
+      ( \k _ acc -> validSquare k && acc
+      )
+      True
+      b
+
+-- How many players remain on the board
+activePlayers :: Board -> Int
+activePlayers = Map.size
+
+-- Check that the square is valid
+validSquare :: Square -> Bool
+validSquare (Square r f) = r >= 1 && r <= 8 && f >= 'a' && f <= 'h'
 
 -- Given a game, check if the current player is in check
 isCheck :: Game -> Bool
@@ -698,9 +719,7 @@ playMove :: Move -> S.State Game MoveResult
 playMove m = do
   g@(Game b c) <- S.get
   if m == Resign
-    then do
-      S.put initialGame
-      return (Won (otherColor c))
+    then return (Won (otherColor c))
     else
       if validMove m g
         then do
@@ -742,15 +761,19 @@ updateBoard (NormalMove p dest disam _ (Capture cap) _ _) g@(Game b c) =
    in boardAfterMove (CPiece c p) origin dest b
 
 -- Given a list of moves, play them all
-playMoves :: [Move] -> S.State Game MoveResult
-playMoves [] = do
+playMoves' :: [Move] -> S.State Game MoveResult
+playMoves' [] = do
   g <- S.get
   return ContinueGame
-playMoves (m : ms) = do
+playMoves' (m : ms) = do
   r <- playMove m
   case r of
-    ContinueGame -> playMoves ms
+    ContinueGame -> playMoves' ms
     _ -> return r
+
+-- Play a list of Moves and return sthe result and the final game state
+playMoves :: [Move] -> Game -> (MoveResult, Game)
+playMoves ms = S.runState (playMoves' ms)
 
 -- Print a Game's state
 printGame :: Game -> String
