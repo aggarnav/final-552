@@ -8,9 +8,17 @@ module ChessParser
 where
 
 import ChessSyntax
-import Control.Applicative (Alternative (many, some, (<|>)))
+  ( Capture (..),
+    Check (..),
+    Disambiguation (..),
+    Mate (..),
+    Move (..),
+    Piece (..),
+    Promotion (..),
+    Square (..),
+  )
+import Control.Applicative (Alternative (some, (<|>)))
 import Data.Maybe (fromMaybe, isJust)
-import Test.HUnit (Test (TestCase, TestList), runTestTT, (~:), (~?=))
 import Text.Parsec
   ( ParseError,
     char,
@@ -144,12 +152,14 @@ captureParser = option False (char 'x' >> return True)
 promotionParser :: Parser (Maybe Piece)
 promotionParser = optionMaybe $ do
   char '='
-  p <- oneOf "NBRQ"
+  p <- oneOf "NBRQKP"
   return $ case p of
     'N' -> Knight
     'B' -> Bishop
     'R' -> Rook
     'Q' -> Queen
+    'K' -> King
+    'P' -> Pawn
     _ -> error "Impossible"
 
 -- Kingside castling parser
@@ -170,9 +180,11 @@ resignParser = do
   try (string "1-0") <|> try (string "0-1")
   return Resign
 
+-- Pretty print a list of moves
 pretty :: [Move] -> [Char]
 pretty = unwords . map singlePretty
 
+-- Pretty print a single move
 singlePretty :: Move -> String
 singlePretty move =
   case move of
@@ -188,18 +200,17 @@ singlePretty move =
         ++ checkToString check
         ++ mateToString mate
 
+-- Convert a piece to a string according to documentation
 pieceToString :: Piece -> String
 pieceToString piece = case piece of
   Pawn -> ""
-  Knight -> "N"
-  Bishop -> "B"
-  Rook -> "R"
-  Queen -> "Q"
-  King -> "K"
+  _ -> show piece
 
+-- Convert a square to a string
 squareToString :: Square -> String
 squareToString (Square rank file) = file : show rank
 
+-- Convert a disambiguation to a string
 disambiguationToString :: Maybe Disambiguation -> String
 disambiguationToString (Just dis) = case dis of
   File f -> [f]
@@ -207,18 +218,22 @@ disambiguationToString (Just dis) = case dis of
   Both sq -> squareToString sq
 disambiguationToString Nothing = ""
 
+-- Convert a promotion to a string
 promotionToString :: Promotion -> String
-promotionToString (Promotion (Just piece)) = "=" ++ pieceToString piece
+promotionToString (Promotion (Just piece)) = "=" ++ show piece
 promotionToString (Promotion Nothing) = ""
 
+-- Convert a capture to a string
 captureToString :: Capture -> String
-captureToString (Capture True) = "x"
-captureToString (Capture False) = ""
+captureToString (Capture x) = chooseVal x "x"
 
+-- Convert a check to a string
 checkToString :: Check -> String
-checkToString (Check True) = "+"
-checkToString (Check False) = ""
+checkToString (Check x) = chooseVal x "+"
 
+-- Convert a mate to a string
 mateToString :: Mate -> String
-mateToString (Mate True) = "#"
-mateToString (Mate False) = ""
+mateToString (Mate x) = chooseVal x "#"
+
+chooseVal :: Bool -> String -> String
+chooseVal b a = if b then a else ""

@@ -1,12 +1,12 @@
 module GameTests (test_all, qc) where
 
-import ChessGame
-import ChessParser (parseFile, parseSingleMove, singlePretty)
-import ChessSyntax
+import ChessGame (playMove, playMoves, validBoard, validMove, initialGame)
+import ChessParser (parseFile)
+import ChessSyntax (Game (Game), Move, MoveResult (InvalidMove, Won), Color (Black, White))
 import Control.Monad.State qualified as S
-import Data.Map qualified as Map
-import Test.HUnit
+import Test.HUnit (Assertion, Counts, Test (TestCase, TestList), assert, runTestTT, (~:), (~?=))
 import Test.QuickCheck
+
 
 test_all :: IO Counts
 test_all = runTestTT $ TestList [test_valid, test_invalid]
@@ -57,68 +57,6 @@ checkFile fn expected = do
               initialGame
         )
 
--------------------------
--- Arbitrary definitions--
--------------------------
-instance Arbitrary Square where
-  arbitrary = do
-    rank <- elements [1 .. 8]
-    file <- elements ['a' .. 'h']
-    return $ Square rank file
-
-newtype ArbBoard = ArbBoard Board deriving (Show)
-
-instance Arbitrary ArbBoard where
-  arbitrary :: Gen ArbBoard
-  arbitrary = do
-    b0 <- helper 8 Pawn (ArbBoard Map.empty)
-    b1 <- helper 2 Bishop b0
-    b2 <- helper 2 Rook b1
-    b3 <- helper 2 Knight b2
-    b4 <- helper 1 Queen b3
-    b5 <- addPiece 1 (CPiece White King) b4
-    addPiece 1 (CPiece Black King) b5
-    where
-      helper :: Int -> Piece -> ArbBoard -> Gen ArbBoard
-      helper count p b = do
-        i' <- chooseInt (0, count)
-        b' <- addPiece i' (CPiece White p) b
-        i'' <- chooseInt (0, count)
-        addPiece i'' (CPiece Black p) b'
-      addPiece :: Int -> CPiece -> ArbBoard -> Gen ArbBoard
-      addPiece i piece (ArbBoard board) = do
-        if i == 0
-          then return (ArbBoard board)
-          else do
-            square <- (arbitrary :: Gen Square)
-            addPiece (i - 1) piece (ArbBoard (Map.insert square piece board))
-
-instance Arbitrary Game where
-  arbitrary = do
-    (ArbBoard board') <- (arbitrary :: Gen ArbBoard)
-    color <- elements [White, Black]
-    return $ Game board' color
-
-instance Arbitrary CPiece where
-  arbitrary = do
-    color <- elements [White, Black]
-    piece <- elements [Pawn, Knight, Bishop, Rook, Queen, King]
-    return $ CPiece color piece
-
-instance Arbitrary Move where
-  arbitrary = do
-    piece <- elements [Pawn, Knight, Bishop, Rook, Queen, King]
-    toSquare <- (arbitrary :: Gen Square)
-    return $
-      NormalMove
-        piece
-        toSquare
-        Nothing
-        (Promotion Nothing)
-        (Capture False)
-        (Check False)
-        (Mate False)
-
 -- Check if the game board changes after a move
 prop_validMove :: Game -> Move -> Property
 prop_validMove game@(Game board color) move =
@@ -135,8 +73,11 @@ prop_inValidMove game@(Game board color) move =
       ==> S.execState (playMove move) game
       == game
 
-prop_roundtrip_move :: Move -> Bool
-prop_roundtrip_move m = parseSingleMove (singlePretty m) == Right m
+-- one move can kill at most own other piece
+-- a valid board must not have an invalid square
+-- after every move the current player should switch
+-- maybe create a generator of valid moves, along with the pretty printer for the move
+-- add a fold over the functionality for the moves
 
 qc :: IO ()
 qc = do
@@ -144,5 +85,3 @@ qc = do
   quickCheck prop_validMove
   putStrLn "QuickCheck invalid moves"
   quickCheck prop_inValidMove
-  putStrLn "QuickCheck roundtrip moves"
-  quickCheck prop_roundtrip_move

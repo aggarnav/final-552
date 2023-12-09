@@ -698,7 +698,9 @@ playMove :: Move -> S.State Game MoveResult
 playMove m = do
   g@(Game b c) <- S.get
   if m == Resign
-    then return (Won (otherColor c))
+    then do
+      S.put initialGame
+      return (Won (otherColor c))
     else
       if validMove m g
         then do

@@ -1,11 +1,29 @@
-module ParserTests (test_all) where
+module ParserTests (test_all, qc) where
 
-import ChessParser
+import ChessParser (parseMoves, parseSingleMove, singlePretty)
 import ChessSyntax
-import Test.HUnit
+  ( Capture (..),
+    Check (..),
+    Disambiguation (..),
+    Mate (..),
+    Move (..),
+    Piece (..),
+    Promotion (..),
+    Square (..),
+  )
+import Test.HUnit (Counts, Test (TestList), runTestTT, (~?=))
+import Test.QuickCheck
 
 test_all :: IO Counts
 test_all = runTestTT test_parseMoves
+
+prop_roundtrip_move :: Move -> Bool
+prop_roundtrip_move m = parseSingleMove (singlePretty m) == Right m
+
+qc :: IO ()
+qc = do
+  putStrLn "QuickCheck printing/parsing moves"
+  quickCheck prop_roundtrip_move
 
 test_parseMoves :: Test
 test_parseMoves =
