@@ -40,307 +40,48 @@ activePlayers = Map.size
 validSquare :: Square -> Bool
 validSquare (Square r f) = r >= 1 && r <= 8 && f >= 'a' && f <= 'h'
 
--- Given a game, check if the current player is in check
-isCheck :: Game -> Bool
-isCheck (Game b c) = case findPiece (CPiece c King) b of
-  Nothing -> True
-  Just (Square rank file) ->
-    pawnKills b c (Square rank file)
-      || knightKills b c (Square rank file)
-      || bishopKills b c (Square rank file)
-      || rookKills b c (Square rank file)
-      || kingKills b c (Square rank file)
-      || queenKills b c (Square rank file)
+-- possible piece moves
+pred2 :: (Enum a) => a -> a
+pred2 = pred . pred
 
--- check if a pawn of a color can attack at this location
-pawnKills :: Board -> Color -> Square -> Bool
-pawnKills b c (Square rank file) =
-  checkPiece
-    (translateColor c Pawn)
-    (rank + translateMove c)
-    (succ file)
-    b
-    || checkPiece
-      (translateColor c Pawn)
-      (rank + translateMove c)
-      (pred file)
-      b
+-- possible piece moves
+succ2 :: (Enum a) => a -> a
+succ2 = succ . succ
 
--- check if a knight of a color can attack at this location
-knightKills :: Board -> Color -> Square -> Bool
-knightKills b c (Square rank file) =
-  checkPiece
-    (translateColor c Knight)
-    (succ2 rank)
-    (succ file)
-    b
-    || checkPiece
-      (translateColor c Knight)
-      (succ2 rank)
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c Knight)
-      (pred2 rank)
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c Knight)
-      (pred2 rank)
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c Knight)
-      (succ rank)
-      (pred2 file)
-      b
-    || checkPiece
-      (translateColor c Knight)
-      (pred rank)
-      (pred2 file)
-      b
-    || checkPiece
-      (translateColor c Knight)
-      (succ rank)
-      (succ2 file)
-      b
-    || checkPiece
-      (translateColor c Knight)
-      (pred rank)
-      (succ2 file)
-      b
+-- Changes the color
+translateColor :: Color -> Piece -> CPiece
+translateColor c = CPiece (otherColor c)
 
--- check if a bishop of a color can attack at this location
-bishopKills :: Board -> Color -> Square -> Bool
-bishopKills b c (Square rank file) =
-  checkPiece
-    (translateColor c Bishop)
-    (succ rank)
-    (succ file)
-    b
-    || checkPiece
-      (translateColor c Bishop)
-      (succ rank)
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c Bishop)
-      (pred rank)
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c Bishop)
-      (pred rank)
-      (pred file)
-      b
-    || checkPieceEmptyPath
-      b
-      (translateColor c Bishop)
-      (Square (succ rank) (succ file))
-      succ
-      succ
-    || checkPieceEmptyPath
-      b
-      (translateColor c Bishop)
-      (Square (succ rank) (pred file))
-      succ
-      pred
-    || checkPieceEmptyPath
-      b
-      (translateColor c Bishop)
-      (Square (pred rank) (succ file))
-      pred
-      succ
-    || checkPieceEmptyPath
-      b
-      (translateColor c Bishop)
-      (Square (pred rank) (pred file))
-      pred
-      pred
+-- return opposite color
+otherColor :: Color -> Color
+otherColor White = Black
+otherColor Black = White
 
--- check if a rook of a color can attack at this location
-rookKills :: Board -> Color -> Square -> Bool
-rookKills b c (Square rank file) =
-  checkPiece
-    (translateColor c Rook)
-    (succ rank)
-    file
-    b
-    || checkPiece
-      (translateColor c Rook)
-      (pred rank)
-      file
-      b
-    || checkPiece
-      (translateColor c Rook)
-      rank
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c Rook)
-      rank
-      (pred file)
-      b
-    || checkPieceEmptyPath
-      b
-      (translateColor c Rook)
-      (Square (succ rank) file)
-      succ
-      id
-    || checkPieceEmptyPath
-      b
-      (translateColor c Rook)
-      (Square (pred rank) file)
-      pred
-      id
-    || checkPieceEmptyPath
-      b
-      (translateColor c Rook)
-      (Square rank (succ file))
-      id
-      succ
-    || checkPieceEmptyPath
-      b
-      (translateColor c Rook)
-      (Square rank (pred file))
-      id
-      pred
+-- translate the move for a color
+translateMove :: Color -> Int
+translateMove White = 1
+translateMove Black = -1
 
--- check if a king of a color can attack at this location
-kingKills :: Board -> Color -> Square -> Bool
-kingKills b c (Square rank file) =
-  checkPiece
-    (translateColor c King)
-    (succ rank)
-    file
-    b
-    || checkPiece
-      (translateColor c King)
-      (pred rank)
-      file
-      b
-    || checkPiece
-      (translateColor c King)
-      rank
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c King)
-      rank
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c King)
-      (succ rank)
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c King)
-      (succ rank)
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c King)
-      (pred rank)
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c King)
-      (pred rank)
-      (pred file)
-      b
+-- checks if a piece exists at the square
+checkPiece :: CPiece -> Rank -> File -> Board -> Bool
+checkPiece p r f b = case b !? Square r f of
+  Nothing -> False
+  Just p' -> p' == p
 
--- check if a queen of a color can attack at this location
-queenKills :: Board -> Color -> Square -> Bool
-queenKills b c (Square rank file) =
-  checkPiece
-    (translateColor c Queen)
-    (succ rank)
-    file
-    b
-    || checkPiece
-      (translateColor c Queen)
-      (pred rank)
-      file
-      b
-    || checkPiece
-      (translateColor c Queen)
-      rank
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c Queen)
-      rank
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c Queen)
-      (succ rank)
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c Queen)
-      (succ rank)
-      (pred file)
-      b
-    || checkPiece
-      (translateColor c Queen)
-      (pred rank)
-      (succ file)
-      b
-    || checkPiece
-      (translateColor c Queen)
-      (pred rank)
-      (pred file)
-      b
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square (succ rank) file)
-      succ
-      id
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square (pred rank) file)
-      pred
-      id
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square rank (succ file))
-      id
-      succ
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square rank (pred file))
-      id
-      pred
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square (succ rank) (succ file))
-      succ
-      succ
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square (succ rank) (pred file))
-      succ
-      pred
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square (pred rank) (succ file))
-      pred
-      succ
-    || checkPieceEmptyPath
-      b
-      (translateColor c Queen)
-      (Square (pred rank) (pred file))
-      pred
-      pred
+-- checks a piece of the opposite color with the desired operation
+checkPieceOp ::
+  Board ->
+  Piece ->
+  Color ->
+  Square ->
+  (Int -> Int) ->
+  (Char -> Char) ->
+  Bool
+checkPieceOp b p c (Square rankO fileO) rankOp fileOp =
+  checkPiece (translateColor c p) rankT fileT b
+  where
+    rankT = rankOp rankO
+    fileT = fileOp fileO
 
 -- checks if a piece exists at the square with empty space
 checkPieceEmptyPath ::
@@ -365,25 +106,92 @@ checkPieceEmptyPath b p (Square rankO fileO) rankOp fileOp =
              )
       )
 
--- checks if a piece exists at the square
-checkPiece :: CPiece -> Rank -> File -> Board -> Bool
-checkPiece p r f b = case b !? Square r f of
-  Nothing -> False
-  Just p' -> p' == p
+checkPiecePathOp ::
+  Board ->
+  Piece ->
+  Color ->
+  Square ->
+  (Int -> Int) ->
+  (Char -> Char) ->
+  Bool
+checkPiecePathOp b p c s@(Square rankO fileO) rankOp fileOp =
+  checkPieceOp b p c s rankOp fileOp
+    || checkPieceEmptyPath
+      b
+      (translateColor c p)
+      (Square (rankOp rankO) (fileOp fileO))
+      rankOp
+      fileOp
 
--- Changes the color
-translateColor :: Color -> Piece -> CPiece
-translateColor c = CPiece (otherColor c)
+-- Given a game, check if the current player is in check
+isCheck :: Game -> Bool
+isCheck (Game b c) = case findPiece (CPiece c King) b of
+  Nothing -> True
+  Just (Square rank file) ->
+    pawnKills b c (Square rank file)
+      || knightKills b c (Square rank file)
+      || bishopKills b c (Square rank file)
+      || rookKills b c (Square rank file)
+      || kingKills b c (Square rank file)
+      || queenKills b c (Square rank file)
 
--- return opposite color
-otherColor :: Color -> Color
-otherColor White = Black
-otherColor Black = White
+-- check if a pawn of a color can attack at this location
+pawnKills :: Board -> Color -> Square -> Bool
+pawnKills b c s@(Square rank file) =
+  foldr -- start with acc for lazy evaluation
+    (\f acc -> acc || checkPieceOp b Pawn c s (+ translateMove c) f)
+    False
+    [succ, pred]
 
--- translate the move for a color
-translateMove :: Color -> Int
-translateMove White = 1
-translateMove Black = -1
+-- check if a knight of a color can attack at this location
+knightKills :: Board -> Color -> Square -> Bool
+knightKills b c s@(Square rank file) =
+  foldr
+    (\(f1, f2) acc -> acc || checkPieceOp b Knight c s f1 f2)
+    False
+    ( [(x, y) | x <- [succ2, pred2], y <- [succ, pred]]
+        ++ [(y, x) | x <- [succ2, pred2], y <- [succ, pred]]
+    )
+
+-- check if a bishop of a color can attack at this location
+bishopKills :: Board -> Color -> Square -> Bool
+bishopKills b c s@(Square rank file) =
+  foldr
+    (\(f1, f2) acc -> acc || checkPiecePathOp b Bishop c s f1 f2)
+    False
+    [(x, y) | x <- [succ, pred], y <- [succ, pred]]
+
+-- check if a rook of a color can attack at this location
+rookKills :: Board -> Color -> Square -> Bool
+rookKills b c s@(Square rank file) =
+  foldr
+    (\(f1, f2) acc -> acc || checkPiecePathOp b Rook c s f1 f2)
+    False
+    ( [(x, id) | x <- [succ, pred]]
+        ++ [(id, x) | x <- [succ, pred]]
+    )
+
+-- check if a king of a color can attack at this location
+kingKills :: Board -> Color -> Square -> Bool
+kingKills b c s@(Square rank file) =
+  foldr
+    (\(f1, f2) acc -> acc || checkPieceOp b King c s f1 f2)
+    False
+    ( [(x, y) | x <- [succ, pred], y <- [succ, pred]]
+        ++ [(id, x) | x <- [succ, pred]]
+        ++ [(x, id) | x <- [succ, pred]]
+    )
+
+-- check if a queen of a color can attack at this location
+queenKills :: Board -> Color -> Square -> Bool
+queenKills b c s@(Square rank file) =
+  foldr
+    (\(f1, f2) acc -> acc || checkPiecePathOp b Queen c s f1 f2)
+    False
+    ( [(x, y) | x <- [succ, pred], y <- [succ, pred]]
+        ++ [(id, x) | x <- [succ, pred]]
+        ++ [(x, id) | x <- [succ, pred]]
+    )
 
 -- Given a move, check if it results in checkmate
 isCheckmate :: Game -> Bool
@@ -480,40 +288,24 @@ emptyOrOpponent (Game b c) s = case b !? s of
 -- Given a move, check if it is valid
 validMove :: Move -> Game -> Bool
 validMove Resign _ = True
-validMove KingSideCastling g@(Game b c) = case c of
-  White ->
-    castlingHelper
-      g
-      (Square 1 'e')
-      (Square 1 'h')
-      (Square 1 'f')
-      (Square 1 'g')
-      Nothing
-  Black ->
-    castlingHelper
-      g
-      (Square 8 'e')
-      (Square 8 'h')
-      (Square 8 'f')
-      (Square 8 'g')
-      Nothing
-validMove QueenSideCastling g@(Game b c) = case c of
-  White ->
-    castlingHelper
-      g
-      (Square 1 'e')
-      (Square 1 'a')
-      (Square 1 'd')
-      (Square 1 'c')
-      (Just (Square 1 'b'))
-  Black ->
-    castlingHelper
-      g
-      (Square 8 'e')
-      (Square 8 'a')
-      (Square 8 'd')
-      (Square 8 'c')
-      (Just (Square 8 'b'))
+validMove KingSideCastling g@(Game b c) =
+  let x = case c of White -> 1; Black -> 8
+   in castlingHelper
+        g
+        (Square x 'e')
+        (Square x 'h')
+        (Square x 'f')
+        (Square x 'g')
+        Nothing
+validMove QueenSideCastling g@(Game b c) =
+  let x = case c of White -> 1; Black -> 8
+   in castlingHelper
+        g
+        (Square x 'e')
+        (Square x 'a')
+        (Square x 'd')
+        (Square x 'c')
+        (Just (Square x 'b'))
 validMove
   ( NormalMove
       p
@@ -574,34 +366,41 @@ validPawnMove (Game b c) (Square ro fo) (Square rd fd) capture =
 -- For a knight check if it can make this move
 validKnightMove :: Square -> Square -> Bool
 validKnightMove (Square ro fo) (Square rd fd) =
-  ( (rd == succ2 ro || rd == pred2 ro)
-      && (fd == succ fo || fd == pred fo)
+  ( foldr (\f -> (||) (rd == f ro)) False [succ2, pred2]
+      && foldr (\f -> (||) (fd == f fo)) False [succ, pred]
   )
-    || ( (rd == succ ro || rd == pred ro)
-           && (fd == succ2 fo || fd == pred2 fo)
+    || ( foldr (\f -> (||) (rd == f ro)) False [succ, pred]
+           && foldr (\f -> (||) (fd == f fo)) False [succ2, pred2]
        )
 
 -- For a bishop check if it can make this move
 validBishopMove :: Board -> Square -> Square -> Bool
-validBishopMove b (Square ro fo) (Square rd fd) =
-  singlePath b (Square ro fo) (Square rd fd) succ succ
-    || singlePath b (Square ro fo) (Square rd fd) succ pred
-    || singlePath b (Square ro fo) (Square rd fd) pred succ
-    || singlePath b (Square ro fo) (Square rd fd) pred pred
+validBishopMove b so sd =
+  foldr -- start with acc for lazy evaluation
+    (\(f1, f2) acc -> acc || singlePath b so sd f1 f2)
+    False
+    [(x, y) | x <- [succ, pred], y <- [succ, pred]]
 
 -- For a rook check if it can make this move
 validRookMove :: Board -> Square -> Square -> Bool
-validRookMove b (Square ro fo) (Square rd fd) =
-  singlePath b (Square ro fo) (Square rd fd) succ id
-    || singlePath b (Square ro fo) (Square rd fd) pred id
-    || singlePath b (Square ro fo) (Square rd fd) id succ
-    || singlePath b (Square ro fo) (Square rd fd) id pred
+validRookMove b so sd =
+  foldr -- start with acc for lazy evaluation
+    (\(f1, f2) acc -> acc || singlePath b so sd f1 f2)
+    False
+    ( [(x, id) | x <- [succ, pred]]
+        ++ [(id, x) | x <- [succ, pred]]
+    )
 
 -- For a king check if it can make this move
 validKingMove :: Square -> Square -> Bool
 validKingMove (Square ro fo) (Square rd fd) =
-  (rd == succ ro || rd == pred ro || rd == ro)
-    && (fd == succ fo || fd == pred fo || fd == fo)
+  foldr
+    (\(f1, f2) -> (||) (rd == f1 ro && fd == f2 fo))
+    False
+    ( [(x, y) | x <- [succ, pred], y <- [succ, pred]]
+        ++ [(x, id) | x <- [succ, pred]]
+        ++ [(id, x) | x <- [succ, pred]]
+    )
 
 -- checks if a direct and empty path exists
 singlePath ::
@@ -615,7 +414,7 @@ singlePath b so@(Square ro fo) sd@(Square rd fd) rankOp fileOp =
   let new_ro = rankOp ro
       new_fo = fileOp fo
    in (new_ro == rd && new_fo == fd)
-        || ( not (new_ro < 1 || new_ro > 8 || new_fo < 'a' || new_fo > 'h')
+        || ( validSquare (Square new_ro new_fo)
                && isNothing
                  (b !? Square new_ro new_fo) -- empty square
                && singlePath
@@ -625,12 +424,6 @@ singlePath b so@(Square ro fo) sd@(Square rd fd) rankOp fileOp =
                  rankOp
                  fileOp
            )
-
-pred2 :: (Enum a) => a -> a
-pred2 = pred . pred
-
-succ2 :: (Enum a) => a -> a
-succ2 = succ . succ
 
 -- Resolve disambiguation
 resolveDisambiguation ::
