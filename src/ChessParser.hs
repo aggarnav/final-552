@@ -2,6 +2,8 @@ module ChessParser
   ( parseMoves,
     parseSingleMove,
     parseFile,
+    pretty,
+    singlePretty,
   )
 where
 
@@ -167,3 +169,56 @@ resignParser :: Parser Move
 resignParser = do
   try (string "1-0") <|> try (string "0-1")
   return Resign
+
+pretty :: [Move] -> [Char]
+pretty = unwords . map singlePretty
+
+singlePretty :: Move -> String
+singlePretty move =
+  case move of
+    QueenSideCastling -> "O-O-O"
+    KingSideCastling -> "O-O"
+    Resign -> "1-0"
+    NormalMove piece toSqure disambiguation promo capture check mate ->
+      pieceToString piece
+        ++ disambiguationToString disambiguation
+        ++ captureToString capture
+        ++ squareToString toSqure
+        ++ promotionToString promo
+        ++ checkToString check
+        ++ mateToString mate
+
+pieceToString :: Piece -> String
+pieceToString piece = case piece of
+  Pawn -> ""
+  Knight -> "N"
+  Bishop -> "B"
+  Rook -> "R"
+  Queen -> "Q"
+  King -> "K"
+
+squareToString :: Square -> String
+squareToString (Square rank file) = file : show rank
+
+disambiguationToString :: Maybe Disambiguation -> String
+disambiguationToString (Just dis) = case dis of
+  File f -> [f]
+  Rank r -> show r
+  Both sq -> squareToString sq
+disambiguationToString Nothing = ""
+
+promotionToString :: Promotion -> String
+promotionToString (Promotion (Just piece)) = "=" ++ pieceToString piece
+promotionToString (Promotion Nothing) = ""
+
+captureToString :: Capture -> String
+captureToString (Capture True) = "x"
+captureToString (Capture False) = ""
+
+checkToString :: Check -> String
+checkToString (Check True) = "+"
+checkToString (Check False) = ""
+
+mateToString :: Mate -> String
+mateToString (Mate True) = "#"
+mateToString (Mate False) = ""

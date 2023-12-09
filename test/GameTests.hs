@@ -1,13 +1,12 @@
 module GameTests (test_all, qc) where
 
-import ChessParser
 import ChessGame
+import ChessParser (parseFile, parseSingleMove, singlePretty)
 import ChessSyntax
-import Test.HUnit
-import Test.QuickCheck
 import Control.Monad.State qualified as S
 import Data.Map qualified as Map
-
+import Test.HUnit
+import Test.QuickCheck
 
 test_all :: IO Counts
 test_all = runTestTT $ TestList [test_valid, test_invalid]
@@ -16,8 +15,7 @@ test_all = runTestTT $ TestList [test_valid, test_invalid]
 test_valid :: Test
 test_valid =
   TestList
-    [ 
-      "game0" ~: checkFile "test/games/game0" (Won White),
+    [ "game0" ~: checkFile "test/games/game0" (Won White),
       "game1" ~: checkFile "test/games/game1" (Won White),
       "game2" ~: checkFile "test/games/game2" (Won White),
       "game3" ~: checkFile "test/games/game3" (Won Black),
@@ -32,9 +30,8 @@ test_valid =
 -- Check against most popular games from chessgames.com
 test_invalid :: Test
 test_invalid =
-  TestList 
-    [ 
-      "badGame0" ~: checkFile "test/games/badGame0" InvalidMove,
+  TestList
+    [ "badGame0" ~: checkFile "test/games/badGame0" InvalidMove,
       "badGame1" ~: checkFile "test/games/badGame1" InvalidMove,
       "badGame2" ~: checkFile "test/games/badGame2" InvalidMove,
       "badGame3" ~: checkFile "test/games/badGame3" InvalidMove,
@@ -50,10 +47,15 @@ test_invalid =
 checkFile :: String -> MoveResult -> Assertion
 checkFile fn expected = do
   result <- parseFile fn
-  case result of 
+  case result of
     Left err -> assert False
-    Right moves -> assert (expected == S.evalState 
-      (playMoves moves) initialGame)
+    Right moves ->
+      assert
+        ( expected
+            == S.evalState
+              (playMoves moves)
+              initialGame
+        )
 
 -------------------------
 -- Arbitrary definitions--
@@ -85,16 +87,16 @@ instance Arbitrary ArbBoard where
         addPiece i'' (CPiece Black p) b'
       addPiece :: Int -> CPiece -> ArbBoard -> Gen ArbBoard
       addPiece i piece (ArbBoard board) = do
-        if i == 0 then return (ArbBoard board)
-        else do
-          square <- (arbitrary :: Gen Square)
-          addPiece (i-1) piece (ArbBoard (Map.insert square piece board))
-
+        if i == 0
+          then return (ArbBoard board)
+          else do
+            square <- (arbitrary :: Gen Square)
+            addPiece (i - 1) piece (ArbBoard (Map.insert square piece board))
 
 instance Arbitrary Game where
   arbitrary = do
     (ArbBoard board') <- (arbitrary :: Gen ArbBoard)
-    color <- elements [White, Black] 
+    color <- elements [White, Black]
     return $ Game board' color
 
 instance Arbitrary CPiece where
@@ -107,24 +109,40 @@ instance Arbitrary Move where
   arbitrary = do
     piece <- elements [Pawn, Knight, Bishop, Rook, Queen, King]
     toSquare <- (arbitrary :: Gen Square)
-    return $ NormalMove piece toSquare Nothing (Promotion Nothing) 
-      (Capture False) (Check False) (Mate False)
+    return $
+      NormalMove
+        piece
+        toSquare
+        Nothing
+        (Promotion Nothing)
+        (Capture False)
+        (Check False)
+        (Mate False)
 
 -- Check if the game board changes after a move
 prop_validMove :: Game -> Move -> Property
 prop_validMove game@(Game board color) move =
-  validBoard board && validMove move game ==>
-  S.execState (playMove move) game /= game
+  validBoard board
+    && validMove move game
+      ==> S.execState (playMove move) game
+      /= game
 
 -- Check that the game board doesn't change after an invalid move
 prop_inValidMove :: Game -> Move -> Property
 prop_inValidMove game@(Game board color) move =
-  validBoard board && not (validMove move game) 
-    ==> S.execState (playMove move) game == game
+  validBoard board
+    && not (validMove move game)
+      ==> S.execState (playMove move) game
+      == game
+
+prop_roundtrip_move :: Move -> Bool
+prop_roundtrip_move m = parseSingleMove (singlePretty m) == Right m
 
 qc :: IO ()
-qc = do 
+qc = do
   putStrLn "QuickCheck valid moves"
   quickCheck prop_validMove
   putStrLn "QuickCheck invalid moves"
   quickCheck prop_inValidMove
+  putStrLn "QuickCheck roundtrip moves"
+  quickCheck prop_roundtrip_move
