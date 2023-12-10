@@ -1,7 +1,7 @@
 module ChessStepper (stepper) where
 
 import ChessGame (initialGame, playMoves, printGame)
-import ChessParser (parseFile, parseMoves)
+import ChessParser (parseFile, parseMoves, singlePretty)
 import ChessSyntax
   ( Game,
     Move,
@@ -75,7 +75,7 @@ movesStepper s (Right (m : ms)) =
   let (result, newGame) = playMoves [m] (game s)
    in case result of
         InvalidMove -> do
-          putStrLn ("Invalid move: " ++ show m)
+          putStrLn ("Invalid move: " ++ singlePretty m)
           go s
         Won c -> do
           putStrLn (show c ++ " won!")
