@@ -53,12 +53,14 @@ parseFile :: String -> IO (Either ParseError [Move])
 parseFile filePath =
   handleJust
     (guard . isDoesNotExistError)
-    (\_ -> return $ Left $ newErrorMessage (Message "File does not exist.") (newPos filePath 0 0))
+    ( \_ ->
+        return $
+          Left $
+            newErrorMessage
+              (Message "File does not exist.")
+              (newPos filePath 0 0)
+    )
     (parseFromFile (const <$> movesParser <*> eof) filePath)
-
--- Parse a file containing space separated moves
--- parseFile :: String -> IO (Either ParseError [Move])
--- parseFile = parseFromFile (const <$> movesParser <*> eof)
 
 -- Space separated moves parser
 movesParser :: Parser [Move]

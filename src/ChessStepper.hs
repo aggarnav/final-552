@@ -8,6 +8,8 @@ import ChessSyntax
     MoveResult (ContinueGame, InvalidMove, Won),
   )
 import Data.List as List (uncons)
+import Text.Parsec.Error (errorPos)
+import Text.Parsec.Pos (sourceName)
 
 -------------
 -- Stepper --
@@ -44,7 +46,14 @@ go s = do
   case List.uncons (words input) of
     Just (":f", [fn]) -> do
       m <- parseFile fn
-      movesStepper s m
+      case m of
+        Left x ->
+          if fn == (sourceName . errorPos) x
+            then do
+              putStrLn "File does not exist."
+              go s
+            else movesStepper s m
+        _ -> movesStepper s m
     Just (":q", _) -> do
       putStrLn "Goodbye!"
     Just (":u", _) -> do
