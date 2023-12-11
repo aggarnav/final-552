@@ -18,7 +18,10 @@ import ChessSyntax
     Square (..),
   )
 import Control.Applicative (Alternative (some, (<|>)))
+import Control.Exception (handleJust)
+import Control.Monad (guard)
 import Data.Maybe (fromMaybe, isJust)
+import System.IO.Error (isDoesNotExistError)
 import Text.Parsec
   ( ParseError,
     char,
@@ -32,6 +35,8 @@ import Text.Parsec
     string,
     try,
   )
+import Text.Parsec.Error (Message (Message), newErrorMessage)
+import Text.Parsec.Pos (newPos)
 import Text.Parsec.String (Parser, parseFromFile)
 
 -- Given pace separated moves, return a list of Moves
@@ -43,8 +48,19 @@ parseSingleMove :: String -> Either ParseError Move
 parseSingleMove = parse moveParser ""
 
 -- Parse a file containing space separated moves
+-- Try to handle exception when the file does not exist
 parseFile :: String -> IO (Either ParseError [Move])
-parseFile = parseFromFile (const <$> movesParser <*> eof)
+parseFile filePath =
+  handleJust
+    (guard . isDoesNotExistError)
+    ( \_ ->
+        return $
+          Left $
+            newErrorMessage
+              (Message "File does not exist.")
+              (newPos filePath 0 0)
+    )
+    (parseFromFile (const <$> movesParser <*> eof) filePath)
 
 -- Space separated moves parser
 movesParser :: Parser [Move]
