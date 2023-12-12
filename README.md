@@ -4,7 +4,7 @@ Names: Arnav Aggarwal (arnavagg) and Huanming Song (noeland)
 Advisor: Cassia Torzcon
 Class: CIS 5520: Advanced Programming (Fall 2023, Prof. Weirich)
 
-This is a fully-functioning implementation of Chess. You can play against a person locally or load past games from files. The game supports the official algebraic notation for moves (including disambiguation and resigns) as mentioned at https://en.wikipedia.org/wiki/Algebraic_notation_(chess). You can also undo individual moves, including when you load incomplete games. Sample games in algebraic notation from a range of experience level are provided in `test/games` from https://www.chessgames.com/ 
+This is a fully-functioning implementation of Chess. You can play against a person locally or load past games from files. The game supports the official algebraic notation for moves (including disambiguation and resigns) as mentioned at https://en.wikipedia.org/wiki/Algebraic_notation_(chess). You can also undo individual moves, including when you load incomplete games. Sample games in algebraic notation from a range of experience levels are provided in `test/games` from https://www.chessgames.com/ 
 
 
 ## Module organization
